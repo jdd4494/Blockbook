@@ -1,6 +1,6 @@
 {
-  "name": "voting-dapp-ropsten",
-  "version": "0.0.1",
+  "name": "speech",
+  "version": "1.0.0",
   "description": "",
   "main": "truffle.js",
   "directories": {
@@ -11,13 +11,13 @@
     "dev": "lite-server",
     "test": "lite-server"
   },
-  "author": "Bukosabino",
+  "author": "Justin Dambra",
   "license": "",
   "devDependencies": {
     "lite-server": "^2.3.0"
   },
   "dependencies": {
     "truffle": "^4.0.6",
-    "truffle-hdwallet-provider": "0.0.3"
+    "truffle-hdwallet-provider": "0.0.5"
   }
 }
