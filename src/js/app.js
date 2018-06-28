@@ -21,7 +21,7 @@ App = {
   },
 
   initContract: function() {
-      $.getJSON('MessagePost.json', function(data){
+      $.getJSON('build/contracts/MessagePost.json', function (data) {
           var MessagePostArtifact = data;
           App.contracts.MessagePost = TruffleContract(MessagePostArtifact);
           App.contracts.MessagePost.setProvider(App.web3Provider);
@@ -30,7 +30,7 @@ App = {
           _displayMessages();
       });
 
-      $.getJSON('SpeechToken.json', function(data) {
+      $.getJSON('build/contracts/SpeechToken.json', function (data) {
           // Get the necessary contract artifact file and instantiate it with truffle-contract
           var SpeechTokenArtifact = data;
           App.contracts.SpeechToken = TruffleContract(SpeechTokenArtifact);
