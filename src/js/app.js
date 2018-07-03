@@ -1,3 +1,6 @@
+var updateTime = 1000;
+var currentMessageID = 0;
+
 App = {
   web3Provider: null,
   contracts: {},
@@ -27,7 +30,13 @@ App = {
           App.contracts.MessagePost.setProvider(App.web3Provider);
 
           console.log("Init message post contract");
+
+          // Display current messages on the blockchain
           _displayMessages();
+          // After a delay check for updates from the blockchain every few seconds/minutes
+          window.setTimeout(function () {
+              window.setInterval(_displayMessages, updateTime);
+          }, 1000);
       });
 
       $.getJSON('SpeechToken.json', function(data) {
@@ -63,7 +72,7 @@ App = {
   refreshBalance: _refreshBalance,
   sendCoin: _sendCoin,
   postMessage: _postMessage,
-  displayMessages: _displayMessages,
+  displayMessages: _displayMessages, // [DEPRECATED] currently never being called 
 
   bindEvents: function() {
     // $(document).on('click', '.btn-adopt', App.handleAdopt);
@@ -85,10 +94,6 @@ function _refreshBalance(){
 
     // Displays Balance
     var balance_element = document.getElementById("balance");
-    balance_element.innerHTML = value.valueOf();
-
-    // Debug Balance Check
-    balance_element = document.getElementById("debug-balance");
     balance_element.innerHTML = value.valueOf();
 
     // Get Balance In Etherium
@@ -129,7 +134,7 @@ function _postMessage() {
         return meta.createMessage(header, body, account);
     }).then(function(result){
         console.log("message posted");
-        _displayMessages();
+        // _displayMessages();
     }).catch(function(e){
         console.log(e.message);
     });
@@ -139,14 +144,14 @@ function _postMessage() {
 function _displayMessages(){
     var meta;
 
-    console.log("(_displayMessages)");
+    //console.log("(_displayMessages)");
     App.contracts.MessagePost.deployed().then(function(instance){
       meta = instance;
 
       return meta.getMessageLength.call();
     }).then(function(result){
-      console.log("num messages " + result);
-      _grabMessage(result, 0);
+      //console.log("num messages " + result);
+      _grabMessage(result, currentMessageID);
     }).catch(function(err){
       console.log(err.message);
     });
@@ -154,8 +159,8 @@ function _displayMessages(){
 
 // Grabs Each Message
 function _grabMessage(totalMsg, i){
-    if(i >= totalMsg){
-        console.log("reached end of messages");
+    if (currentMessageID >= totalMsg) {
+        //console.log("reached end of messages");
         return;
     }
 
@@ -179,6 +184,7 @@ function _grabMessage(totalMsg, i){
         message.append(messageTemplate.html());
 
         i++;
+        currentMessageID++;
         _grabMessage(totalMsg, i);
     }).catch(function(err){
       console.log(err.message);
