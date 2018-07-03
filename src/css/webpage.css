@@ -1,11 +1,11 @@
-﻿.container {
+﻿.divBody {
     position: relative;
     
     align-items: center;
     justify-content: center;
     
-    height: 100vh;
-    
+    background: #E5EAFA;
+	color: #093824;
     text-align: center;
 }
 
@@ -20,19 +20,6 @@
     
     pointer-events: none;
     opacity: .05;
-}
-
-.main-title {
-    padding: .3em 1em .25em;
-    
-    font-weight: 400;
-    font-size: 3vw;
-    line-height: 1;
-    text-transform: uppercase;
-    letter-spacing: .15em;
-    color: #4c2298;
-    
-    background: #794fc5;
 }
 
 .link {
