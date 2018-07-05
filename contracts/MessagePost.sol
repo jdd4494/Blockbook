@@ -7,6 +7,7 @@ contract MessagePost {
     struct Message{
         string header;
         string body;
+		string date;
         address owner;
     }
 
@@ -20,11 +21,13 @@ contract MessagePost {
     function createMessage(
         string _header,
         string _body,
+		string _date,
         address _owner
     ) public returns (address){
         Message memory _msg = Message({
             header: _header,
             body:   _body,
+			date:   _date,
             owner:  _owner
         });
 
@@ -37,8 +40,8 @@ contract MessagePost {
         return messages.length;
     }
 
-    function getMessage(uint256 pos) public constant returns(string header, string body, address owner){
+    function getMessage(uint256 pos) public constant returns(string header, string body, string date, address owner){
         Message storage msg = messages[pos];
-        return (msg.header, msg.body, msg.owner);
+        return (msg.header, msg.body, msg.date, msg.owner);
     }
 }

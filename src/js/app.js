@@ -1,122 +1,117 @@
-var updateTime = 1000;
-var currentMessageID = 0;
-
 App = {
-  web3Provider: null,
-  contracts: {},
+    web3Provider: null,
+    contracts: {},
 
-  init: function() {
+    init: function () {
 
-    return App.initWeb3();
-  },
+        return App.initWeb3();
+    },
 
-  initWeb3: function() {
-      // Is there an injected web3 instance?
-      if (typeof web3 !== 'undefined') {
-        App.web3Provider = web3.currentProvider;
-      } else {
-        // If no injected web3 instance is detected, fall back to Ganache
-        App.web3Provider = new Web3.providers.HttpProvider('http://localhost:9545');
-      }
-      web3 = new Web3(App.web3Provider);
+    initWeb3: function () {
+        // Is there an injected web3 instance?
+        if (typeof web3 !== 'undefined') {
+            App.web3Provider = web3.currentProvider;
+        } else {
+            // If no injected web3 instance is detected, fall back to Ganache
+            App.web3Provider = new Web3.providers.HttpProvider('http://localhost:9545');
+        }
+        web3 = new Web3(App.web3Provider);
 
-    return App.initContract();
-  },
+        return App.initContract();
+    },
 
-  initContract: function() {
-      $.getJSON('MessagePost.json', function(data){
-          var MessagePostArtifact = data;
-          App.contracts.MessagePost = TruffleContract(MessagePostArtifact);
-          App.contracts.MessagePost.setProvider(App.web3Provider);
+    initContract: function () {
+        $.getJSON('MessagePost.json', function (data) {
+            var MessagePostArtifact = data;
+            App.contracts.MessagePost = TruffleContract(MessagePostArtifact);
+            App.contracts.MessagePost.setProvider(App.web3Provider);
 
-          console.log("Init message post contract");
+            console.log("Init message post contract");
+            _displayMessages();
+        });
 
-          // Display current messages on the blockchain
-          _displayMessages();
-          // After a delay check for updates from the blockchain every few seconds/minutes
-          window.setTimeout(function () {
-              window.setInterval(_displayMessages, updateTime);
-          }, 1000);
-      });
+        $.getJSON('SpeechToken.json', function (data) {
+            // Get the necessary contract artifact file and instantiate it with truffle-contract
+            var SpeechTokenArtifact = data;
+            App.contracts.SpeechToken = TruffleContract(SpeechTokenArtifact);
 
-      $.getJSON('SpeechToken.json', function(data) {
-          // Get the necessary contract artifact file and instantiate it with truffle-contract
-          var SpeechTokenArtifact = data;
-          App.contracts.SpeechToken = TruffleContract(SpeechTokenArtifact);
+            // Set the provider for our contract
+            App.contracts.SpeechToken.setProvider(App.web3Provider);
 
-          // Set the provider for our contract
-          App.contracts.SpeechToken.setProvider(App.web3Provider);
+            // Get the initial account balance so it can be displayed.
+            web3.eth.getAccounts(function (err, accs) {
+                if (err != null) {
+                    alert("There was an error fetching your accounts.");
+                    return;
+                }
 
-          // Get the initial account balance so it can be displayed.
-          web3.eth.getAccounts(function(err, accs) {
-            if (err != null) {
-              alert("There was an error fetching your accounts.");
-              return;
-            }
+                if (accs.length == 0) {
+                    alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.");
+                    return;
+                }
 
-            if (accs.length == 0) {
-              alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.");
-              return;
-            }
+                accounts = accs;
+                account = accounts[0];
 
-            accounts = accs;
-            account = accounts[0];
+                return App.refreshBalance();
+            });
+        });
 
-            return App.refreshBalance();
-          });
-      });
+        return App.bindEvents();
+    },
 
-    return App.bindEvents();
-  },
+    refreshBalance: _refreshBalance,
+    sendCoin: _sendCoin,
+    postMessage: _postMessage,
+    displayMessages: _displayMessages,
 
-  refreshBalance: _refreshBalance,
-  sendCoin: _sendCoin,
-  postMessage: _postMessage,
-  displayMessages: _displayMessages, // [DEPRECATED] currently never being called 
-
-  bindEvents: function() {
-    // $(document).on('click', '.btn-adopt', App.handleAdopt);
-  },
+    bindEvents: function () {
+        // $(document).on('click', '.btn-adopt', App.handleAdopt);
+    },
 
 };
 
 // Displays Current Account Balance
-function _refreshBalance(){
-  var self = this;
+function _refreshBalance() {
+    var self = this;
 
-  var meta;
-  App.contracts.SpeechToken.deployed().then(function(instance) {
-    meta = instance;
-    console.log("current account: " + account);
-    return meta.balanceOf.call(account, {from: account});
-  }).then(function(value) {
-    console.log("current account balance: " + value);
+    var meta;
+    App.contracts.SpeechToken.deployed().then(function (instance) {
+        meta = instance;
+        console.log("current account: " + account);
+        return meta.balanceOf.call(account, { from: account });
+    }).then(function (value) {
+        console.log("current account balance: " + value);
 
-    // Displays Balance
-    var balance_element = document.getElementById("balance");
-    balance_element.innerHTML = value.valueOf();
+        // Displays Balance
+        var balance_element = document.getElementById("balance");
+        balance_element.innerHTML = value.valueOf();
 
-    // Get Balance In Etherium
-    _getBalanceInEth();
-  }).catch(function(e) {
-    console.log(e.message);
-  });
+        // Debug Balance Check
+        balance_element = document.getElementById("debug-balance");
+        balance_element.innerHTML = value.valueOf();
+
+        // Get Balance In Etherium
+        _getBalanceInEth();
+    }).catch(function (e) {
+        console.log(e.message);
+    });
 }
 
 // Show Balance In Etherium
-function _getBalanceInEth(){
-  App.contracts.SpeechToken.deployed().then(function(instance) {
-    meta = instance;
-    console.log("current account: " + account);
-    return meta.getBalanceInEth.call(account, {from: account});
-  }).then(function(value) {
-    console.log("current account balance in ETH: " + value);
-    var balance_element = document.getElementById("eth-balance");
-    balance_element.innerHTML = value.valueOf();
+function _getBalanceInEth() {
+    App.contracts.SpeechToken.deployed().then(function (instance) {
+        meta = instance;
+        console.log("current account: " + account);
+        return meta.getBalanceInEth.call(account, { from: account });
+    }).then(function (value) {
+        console.log("current account balance in ETH: " + value);
+        var balance_element = document.getElementById("eth-balance");
+        balance_element.innerHTML = value.valueOf();
 
-  }).catch(function(e) {
-    console.log(e.message);
-  });
+    }).catch(function (e) {
+        console.log(e.message);
+    });
 }
 
 // Post Message On Board
@@ -126,52 +121,52 @@ function _postMessage() {
 
     var header = document.getElementById("msg_header").value;
     var body = document.getElementById("msg_body").value;
-
-    console.log("Post message attempt: " + header + " body: " + body);
-    App.contracts.MessagePost.deployed().then(function(instance){
+    var date = new Date().toString();
+    console.log("Post message attempt: " + header + " body: " + body + " date: " + date);
+    App.contracts.MessagePost.deployed().then(function (instance) {
         meta = instance;
         console.log("Do i get here");
-        return meta.createMessage(header, body, account);
-    }).then(function(result){
+        return meta.createMessage(header, body, date, account);
+    }).then(function (result) {
         console.log("message posted");
-        // _displayMessages();
-    }).catch(function(e){
+        _displayMessages();
+    }).catch(function (e) {
         console.log(e.message);
     });
 }
 
 // Display Messsage Posts
-function _displayMessages(){
+function _displayMessages() {
     var meta;
 
-    //console.log("(_displayMessages)");
-    App.contracts.MessagePost.deployed().then(function(instance){
-      meta = instance;
+    console.log("(_displayMessages)");
+    App.contracts.MessagePost.deployed().then(function (instance) {
+        meta = instance;
 
-      return meta.getMessageLength.call();
-    }).then(function(result){
-      //console.log("num messages " + result);
-      _grabMessage(result, currentMessageID);
-    }).catch(function(err){
-      console.log(err.message);
+        return meta.getMessageLength.call();
+    }).then(function (result) {
+        console.log("num messages " + result);
+        _grabMessage(result, 0);
+    }).catch(function (err) {
+        console.log(err.message);
     });
 }
 
 // Grabs Each Message
-function _grabMessage(totalMsg, i){
-    if (currentMessageID >= totalMsg) {
-        //console.log("reached end of messages");
+function _grabMessage(totalMsg, i) {
+    if (i >= totalMsg) {
+        console.log("reached end of messages");
         return;
     }
 
     var tMsgId = i;
     var meta;
 
-    App.contracts.MessagePost.deployed().then(function(instance){
-      meta = instance;
+    App.contracts.MessagePost.deployed().then(function (instance) {
+        meta = instance;
 
-      return meta.getMessage.call(tMsgId);
-    }).then(function(result){
+        return meta.getMessage.call(tMsgId);
+    }).then(function (result) {
         console.log(result);
 
         var message = $('#messages');
@@ -179,45 +174,45 @@ function _grabMessage(totalMsg, i){
 
         messageTemplate.find('.panel-title').text(result[0]);
         messageTemplate.find('.msg-body').text(result[1]);
-        messageTemplate.find('.msg-owner').text(result[2]);
+        messageTemplate.find('.panel-date').text(result[2]);
+        messageTemplate.find('.msg-owner').text(result[3]);
 
         message.append(messageTemplate.html());
 
         i++;
-        currentMessageID++;
         _grabMessage(totalMsg, i);
-    }).catch(function(err){
-      console.log(err.message);
+    }).catch(function (err) {
+        console.log(err.message);
     });
 }
 
 // Send Coin To Another Account
 function _sendCoin() {
-  var self = this;
+    var self = this;
 
-  var amount = parseInt(document.getElementById("amount").value);
-  var receiver = document.getElementById("receiver").value;
+    var amount = parseInt(document.getElementById("amount").value);
+    var receiver = document.getElementById("receiver").value;
 
-  //this.setStatus("Initiating transaction... (please wait)");
+    //this.setStatus("Initiating transaction... (please wait)");
 
-  console.log("amount: " + amount + " receiver: " + receiver);
+    console.log("amount: " + amount + " receiver: " + receiver);
 
-  var meta;
-  App.contracts.SpeechToken.deployed().then(function(instance) {
-    meta = instance;
+    var meta;
+    App.contracts.SpeechToken.deployed().then(function (instance) {
+        meta = instance;
 
-    return meta.transferFrom(account, receiver, amount, {from: account});
-  }).then(function(result) {
-    //self.setStatus("Transaction complete: " + result);
-    self.refreshBalance();
-  }).catch(function(e) {
-    self.setStatus(e.message);
-    console.log(e.message);
-  });
+        return meta.transferFrom(account, receiver, amount, { from: account });
+    }).then(function (result) {
+        //self.setStatus("Transaction complete: " + result);
+        self.refreshBalance();
+    }).catch(function (e) {
+        self.setStatus(e.message);
+        console.log(e.message);
+    });
 }
 
-$(function() {
-  $(window).load(function() {
-    App.init();
-  });
+$(function () {
+    $(window).load(function () {
+        App.init();
+    });
 });
