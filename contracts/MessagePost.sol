@@ -17,7 +17,8 @@ contract MessagePost {
     function MessagePost(){
         owner = msg.sender;
     }
-
+	
+	// Creates message on contract
     function createMessage(
         string _header,
         string _body,

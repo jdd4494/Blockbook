@@ -87,10 +87,6 @@ function _refreshBalance() {
         var balance_element = document.getElementById("balance");
         balance_element.innerHTML = value.valueOf();
 
-        // Debug Balance Check
-        balance_element = document.getElementById("debug-balance");
-        balance_element.innerHTML = value.valueOf();
-
         // Get Balance In Etherium
         _getBalanceInEth();
     }).catch(function (e) {
