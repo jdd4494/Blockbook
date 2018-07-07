@@ -121,8 +121,8 @@ function _postMessage() {
     console.log("Post message attempt: " + header + " body: " + body + " date: " + date);
     App.contracts.MessagePost.deployed().then(function (instance) {
         meta = instance;
-        console.log("Do i get here");
-        return meta.createMessage(header, body, date, account);
+        //console.log("Do i get here");
+        return meta.createMessage(header, body, account);
     }).then(function (result) {
         console.log("message posted");
         _displayMessages();
@@ -138,7 +138,7 @@ function _displayMessages() {
     console.log("(_displayMessages)");
     App.contracts.MessagePost.deployed().then(function (instance) {
         meta = instance;
-
+        console.log("DO I GET HERE?");
         return meta.getMessageLength.call();
     }).then(function (result) {
         console.log("num messages " + result);
@@ -171,7 +171,7 @@ function _grabMessage(totalMsg, i) {
         messageTemplate.find('.panel-title').text(result[0]);
         messageTemplate.find('.msg-body').text(result[1]);
         messageTemplate.find('.panel-date').text(result[2]);
-        messageTemplate.find('.msg-owner').text(result[3]);
+        messageTemplate.find('.msg-owner').text(result[2]);
 
         message.append(messageTemplate.html());
 
