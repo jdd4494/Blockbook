@@ -122,7 +122,7 @@ function _postMessage() {
     App.contracts.MessagePost.deployed().then(function (instance) {
         meta = instance;
         //console.log("Do i get here");
-        return meta.createMessage(header, body, account);
+        return meta.createMessage(header, body, date, account);
     }).then(function (result) {
         console.log("message posted");
         _displayMessages();
@@ -171,7 +171,7 @@ function _grabMessage(totalMsg, i) {
         messageTemplate.find('.panel-title').text(result[0]);
         messageTemplate.find('.msg-body').text(result[1]);
         messageTemplate.find('.panel-date').text(result[2]);
-        messageTemplate.find('.msg-owner').text(result[2]);
+        messageTemplate.find('.msg-owner').text("Poster: " + result[3]);
 
         message.append(messageTemplate.html());
 
